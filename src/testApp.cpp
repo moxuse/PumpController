@@ -6,7 +6,6 @@
 //--------------------------------------------------------------
 void testApp::setup(){
     run = true;
-    
     serial.enumerateDevices();
     serial.setup( "/dev/tty.usbmodem1411", BAUD_RATE );
     
@@ -23,7 +22,7 @@ void testApp::setup(){
     ofAddListener(gui->newGUIEvent,this,&testApp::guiEvent);
     
     timer.startTimer();
-    ofAddListener( timer.TIMER_REACHED, this, &testApp::timeerCallback );
+    ofAddListener( timer.TIMER_REACHED, this, &testApp::timerCallback );
 }
 
 //--------------------------------------------------------------
@@ -51,7 +50,7 @@ void testApp::draw(){
 }
 
 //--------------------------------------------------------------
-void testApp::timeerCallback( ofEventArgs &e ) {
+void testApp::timerCallback( ofEventArgs &e ) {
     int count;
     count = timer.count;
     cout << "timer recieved _________ " << &e << " ms : " << count << endl;
@@ -81,7 +80,7 @@ void testApp::guiEvent( ofxUIEventArgs &e ){
 void testApp::proceedLevel( int _nextLevel ) {
     if( run ){
         int next = _nextLevel;
-        if( 9999 != next ){
+        if( 9999 != next ){ //in case error 9999
             
             if( currntLevel > next ){
                 unsigned char buf[3] = "XB";
@@ -103,7 +102,6 @@ void testApp::proceedLevel( int _nextLevel ) {
 
 //--------------------------------------------------------------
 void testApp::reset() {
-    
     //timer.stopTimer();
     
     timer.reset();
@@ -111,9 +109,9 @@ void testApp::reset() {
     run = false;
 };
 
-
-
-
+////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 
 //--------------------------------------------------------------
 void testApp::keyPressed(int key){
