@@ -59,6 +59,10 @@ void testApp::timerCallback( ofEventArgs &e ) {
     int count;
     count = timer.count;
     busy = false;
+    
+    unsigned char buf[3] = "XR";
+    serial.writeBytes( buf , sizeof(buf) / sizeof(buf[0]) );
+    
     cout << "timer recieved _________ " << &e << " ms : " << count << endl;
     cout << "now currentLevel is _________ " << currentLevel << endl;
 }
@@ -89,19 +93,29 @@ void testApp::proceedLevel( int _nextLevel ) {
         int next = _nextLevel;
         if( 9999 != next ){ //in case error 9999
             
-            if( currentLevel > next ){
-                unsigned char buf[3] = "XB";
-                serial.writeBytes( buf , sizeof(buf) / sizeof(buf[0]) );
-                
-            } else {
-                unsigned char buf[3] = "XF";
-                serial.writeBytes( buf , sizeof(buf) / sizeof(buf[0]) );
-
-            }
+            
+            float timeDIff = timeDiffToNextLevel( currentLevel, next );
             timer.reset();
             timer.loop(false);
-            timer.setTimer( timeDiffToNextLevel( currentLevel, next ) );
-            timer.startTimer();
+            
+            if( timeDIff >= 1 ) {
+                
+                if( currentLevel > next ){
+                    unsigned char buf[3] = "XB";
+                    serial.writeBytes( buf , sizeof(buf) / sizeof(buf[0]) );
+                    
+                } else {
+                    unsigned char buf[3] = "XF";
+                    serial.writeBytes( buf , sizeof(buf) / sizeof(buf[0]) );
+
+                }
+            
+                timer.setTimer( timeDIff );
+                timer.startTimer();
+            } else {
+                reset();
+            }
+                    
             
         } else {
             
