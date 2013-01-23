@@ -25,6 +25,7 @@ class testApp : public ofBaseApp{
         void timerCallback( ofEventArgs &e );
         void guiEvent( ofxUIEventArgs &e );
         void proceedLevel( int _nextLevel );
+        float timeDiffToNextLevel( int _current, int _next );
         void reset();
 		
     private:
@@ -34,6 +35,8 @@ class testApp : public ofBaseApp{
         ofxTimer timer;
         bool run;
         bool isReset;
-        int currntLevel;
+        bool busy;
+    
+        int currentLevel;
     
 };

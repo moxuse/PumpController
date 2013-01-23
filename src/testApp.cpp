@@ -6,12 +6,13 @@
 //--------------------------------------------------------------
 void testApp::setup(){
     run = true;
+    busy = false;
     serial.enumerateDevices();
     serial.setup( "/dev/tty.usbmodem1411", BAUD_RATE );
     
     reciver.setup( RECIVE_PORT );
     
-    timer.setup(1000, true);
+    timer.setup(1000, false);
     
     gui = new ofxUICanvas();
     
@@ -21,7 +22,7 @@ void testApp::setup(){
     gui->addLabel("CurrentLevel", "CurrentLevel : 0");
     ofAddListener(gui->newGUIEvent,this,&testApp::guiEvent);
     
-    timer.startTimer();
+    //timer.startTimer();
     ofAddListener( timer.TIMER_REACHED, this, &testApp::timerCallback );
 }
 
@@ -33,12 +34,16 @@ void testApp::update(){
         reciver.getNextMessage( &m );
         
         if( "/recive" == m.getAddress() ) {
-            int nextLevel = m.getArgAsInt32(0);
-            proceedLevel( nextLevel );
-            if( !run ){
-                cout << "recived OSC message but not running flag.." << endl;
+            if( false == busy ) {
+                int nextLevel = m.getArgAsInt32(0);
+                busy = true;
+                proceedLevel( nextLevel );
+                if( !run ){
+                    cout << "recived OSC message but not running flag.." << endl;
+                }
             }
         }
+        
     }
 }
 
@@ -53,7 +58,9 @@ void testApp::draw(){
 void testApp::timerCallback( ofEventArgs &e ) {
     int count;
     count = timer.count;
+    busy = false;
     cout << "timer recieved _________ " << &e << " ms : " << count << endl;
+    cout << "now currentLevel is _________ " << currentLevel << endl;
 }
 
 //--------------------------------------------------------------
@@ -82,14 +89,18 @@ void testApp::proceedLevel( int _nextLevel ) {
         int next = _nextLevel;
         if( 9999 != next ){ //in case error 9999
             
-            if( currntLevel > next ){
+            if( currentLevel > next ){
                 unsigned char buf[3] = "XB";
                 serial.writeBytes( buf , sizeof(buf) / sizeof(buf[0]) );
+                
             } else {
                 unsigned char buf[3] = "XF";
                 serial.writeBytes( buf , sizeof(buf) / sizeof(buf[0]) );
+
             }
-            
+            timer.reset();
+            timer.loop(false);
+            timer.setTimer( timeDiffToNextLevel( currentLevel, next ) );
             timer.startTimer();
             
         } else {
@@ -97,16 +108,19 @@ void testApp::proceedLevel( int _nextLevel ) {
             unsigned char buf[3] = "XR";
             serial.writeBytes( buf , sizeof(buf) / sizeof(buf[0]) );
         }
+        currentLevel = next;
     }
 };
+
+float testApp::timeDiffToNextLevel( int _current, int _next ) {
+    float timeRev = 12;
+    return ( abs( _next - _current ) * timeRev );
+}
 
 //--------------------------------------------------------------
 void testApp::reset() {
     //timer.stopTimer();
-    
-    timer.reset();
-    timer.setTimer( ofRandom(1200) );
-    run = false;
+    busy = false;
 };
 
 ////////////////////////////////////////////////////////////////
