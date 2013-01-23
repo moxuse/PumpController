@@ -14,6 +14,7 @@ int led_2 = 1;
 
 int currentLevel;
 int nextLevel;
+int counter;
 
 boolean busy;
 boolean toggleBlink;
@@ -31,6 +32,8 @@ void setup() {
   busy = false;
   currentLevel = 0;
   nextLevel = 0;
+  counter = 0;
+  
   toggleBlink = false;
   
   Serial.begin( 9600 );
@@ -50,20 +53,17 @@ void loop() {
     if ( checkByte == 'X' ) {
       
       inByte = Serial.read();
-      blinkLED();
       
       if(inByte == 'F') { //inByte F -> fowerd    user1 -> back
           digitalWrite(led_1, HIGH);
           digitalWrite(led_2, LOW);
           //counter = 0;
           busy = true;
-          blinkLED();
       } else if ( inByte == 'B' ) {
           digitalWrite(led_1, LOW);
           digitalWrite(led_2, HIGH);
           //counter = 0;
           busy = true;
-          blinkLED();
       
       } else if ( inByte == 'R' ) {
           digitalWrite(led_1, LOW);
@@ -79,7 +79,6 @@ void loop() {
     }
     digitalWrite(led, LOW);
     delay( 10 );
-    blinkLED();
   }
   
 }
@@ -97,4 +96,10 @@ void blinkLED() {
       toggleBlink = false;
   }
 
+  counter++;
+  if( counter > 30 ){
+    counter = 0;
+    digitalWrite(led_1, LOW);
+    digitalWrite(led_2, LOW);
+  }
 }
