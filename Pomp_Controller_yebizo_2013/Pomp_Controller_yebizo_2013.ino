@@ -57,18 +57,18 @@ void loop() {
       if(inByte == 'F') { //inByte F -> fowerd    user1 -> back
           digitalWrite(led_1, HIGH);
           digitalWrite(led_2, LOW);
-          //counter = 0;
+          counter = 0;
           busy = true;
       } else if ( inByte == 'B' ) {
           digitalWrite(led_1, LOW);
           digitalWrite(led_2, HIGH);
-          //counter = 0;
+          counter = 0;
           busy = true;
       
       } else if ( inByte == 'R' ) {
           digitalWrite(led_1, LOW);
           digitalWrite(led_2, LOW);
-          //counter = 0;
+          counter = 0;
           busy = false;
         
       }
@@ -97,7 +97,7 @@ void blinkLED() {
   }
 
   counter++;
-  if( counter > 30 ){
+  if( counter > 300 ){
     counter = 0;
     digitalWrite(led_1, LOW);
     digitalWrite(led_2, LOW);
