@@ -65,6 +65,11 @@ void testApp::timerCallback( ofEventArgs &e ) {
     
     cout << "timer recieved _________ " << &e << " ms : " << count << endl;
     cout << "now currentLevel is _________ " << currentLevel << endl;
+    
+    ofxUILabel *label = ( ofxUILabel *)( gui->getWidget("CurrentLevel") );
+    char result[100];
+    sprintf( result, "CurrentLevel : %d", currentLevel );
+    label -> setLabel( result );
 }
 
 //--------------------------------------------------------------
@@ -136,6 +141,7 @@ void testApp::reset() {
     //timer.stopTimer();
     busy = false;
 };
+
 
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
