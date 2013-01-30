@@ -25,6 +25,10 @@ void testApp::setup(){
     ofAddListener(gui->newGUIEvent,this,&testApp::guiEvent);
     
     ofAddListener( timer.TIMER_REACHED, this, &testApp::timerCallback );
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5 * NSEC_PER_SEC), dispatch_get_current_queue(), ^{//do reset after 5 seconds
+        reset();
+    });
 }
 
 //--------------------------------------------------------------
@@ -110,7 +114,7 @@ void testApp::guiEvent( ofxUIEventArgs &e ){
 void testApp::proceedLevel( int _nextLevel ) {
     if( run ){
         int next = _nextLevel;
-        if( 9999 != next ){ //in case error 9999
+        if( 9999 != next  && -1 < next ){ //in case error 9999
             
             
             float timeDIff = timeDiffToNextLevel( currentLevel, next );
@@ -147,7 +151,12 @@ void testApp::proceedLevel( int _nextLevel ) {
 };
 
 float testApp::timeDiffToNextLevel( int _current, int _next ) {
+    
+    ///////////////////timeRev is value for callbration
     float timeRev = 12;
+    //////////////////
+    
+    
     return ( abs( _next - _current ) * timeRev );
 }
 
@@ -155,7 +164,7 @@ float testApp::timeDiffToNextLevel( int _current, int _next ) {
 void testApp::reset() {
     //timer.stopTimer();
     //busy = false;
-    
+
 };
 
 //--------------------------------------------------------------
