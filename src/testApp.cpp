@@ -3,6 +3,8 @@
 #define RECIVE_PORT 5000
 #define BAUD_RATE 9600
 
+
+bool togBusyBlink = false;
 //--------------------------------------------------------------
 void testApp::setup(){
     run = true;
@@ -22,7 +24,6 @@ void testApp::setup(){
     gui->addLabel("CurrentLevel", "CurrentLevel : 0");
     ofAddListener(gui->newGUIEvent,this,&testApp::guiEvent);
     
-    //timer.startTimer();
     ofAddListener( timer.TIMER_REACHED, this, &testApp::timerCallback );
 }
 
@@ -45,6 +46,14 @@ void testApp::update(){
         }
         
     }
+    
+    if( 0 == ofGetFrameNum()%300 ){
+        if( togBusyBlink ) {
+            togBusyBlink = false;
+        } else {
+            togBusyBlink = true;
+        }
+    }
 }
 
 //--------------------------------------------------------------
@@ -52,16 +61,21 @@ void testApp::draw(){
     
     ofBackground(0);
     
+    if( busy && togBusyBlink) {
+        ofPushStyle();
+        ofSetColor(0, 255, 255);
+        ofRect(5, 150, 230, 30);
+        ofPopStyle();
+    }
+
 }
 
 //--------------------------------------------------------------
 void testApp::timerCallback( ofEventArgs &e ) {
     int count;
     count = timer.count;
-    busy = false;
     
-    unsigned char buf[3] = "XR";
-    serial.writeBytes( buf , sizeof(buf) / sizeof(buf[0]) );
+    pompTakeRest();
     
     cout << "timer recieved _________ " << &e << " ms : " << count << endl;
     cout << "now currentLevel is _________ " << currentLevel << endl;
@@ -118,16 +132,17 @@ void testApp::proceedLevel( int _nextLevel ) {
                 timer.setTimer( timeDIff );
                 timer.startTimer();
             } else {
-                reset();
+                busy = false;
             }
                     
             
         } else {
+            pompTakeRest();
             
-            unsigned char buf[3] = "XR";
-            serial.writeBytes( buf , sizeof(buf) / sizeof(buf[0]) );
         }
         currentLevel = next;
+    } else {
+        busy = false;
     }
 };
 
@@ -139,9 +154,16 @@ float testApp::timeDiffToNextLevel( int _current, int _next ) {
 //--------------------------------------------------------------
 void testApp::reset() {
     //timer.stopTimer();
-    busy = false;
+    //busy = false;
+    
 };
 
+//--------------------------------------------------------------
+void testApp::pompTakeRest() {
+    unsigned char buf[3] = "XR";
+    serial.writeBytes( buf , sizeof(buf) / sizeof(buf[0]) );
+    busy = false;
+}
 
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////

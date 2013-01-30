@@ -27,6 +27,7 @@ class testApp : public ofBaseApp{
         void proceedLevel( int _nextLevel );
         float timeDiffToNextLevel( int _current, int _next );
         void reset();
+        void pompTakeRest();
 		
     private:
         ofxUICanvas *gui;
