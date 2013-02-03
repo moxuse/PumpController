@@ -5,6 +5,8 @@
 #include "ofxOsc.h"
 #include "ofxTimer.h"
 
+#define NUM_MSG_STRINGS 15
+
 class testApp : public ofBaseApp{
 
 	public:
@@ -24,7 +26,7 @@ class testApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
         void timerCallback( ofEventArgs &e );
         void guiEvent( ofxUIEventArgs &e );
-        void proceedLevel( int _nextLevel );
+        void proceedLevel( int upDown , int _nextLevel );
         float timeDiffToNextLevel( int _current, int _next );
         void reset();
         void pompTakeRest();
@@ -39,5 +41,10 @@ class testApp : public ofBaseApp{
         bool busy;
     
         int currentLevel;
+    
+    
+        int current_msg_string;
+        string msg_strings[NUM_MSG_STRINGS];
+        float timers[NUM_MSG_STRINGS];
     
 };

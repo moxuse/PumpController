@@ -1,12 +1,14 @@
 #include "testApp.h"
 
-#define RECIVE_PORT 5000
+#define RECIVE_PORT 7400
 #define BAUD_RATE 9600
 
 
 bool togBusyBlink = false;
 //--------------------------------------------------------------
 void testApp::setup(){
+    current_msg_string = 0;
+    
     run = true;
     busy = false;
     serial.enumerateDevices();
@@ -18,10 +20,10 @@ void testApp::setup(){
     
     gui = new ofxUICanvas();
     
-    gui->addWidgetDown(new ofxUILabel("Pomp Controller for yebizo 2013", OFX_UI_FONT_LARGE));
+    gui->addWidgetDown(new ofxUILabel("PumpController for yebizo 2013", OFX_UI_FONT_LARGE));
     gui->addToggle("Recive osc and run", true, 30, 30);
-    gui->addButton("Reset", isReset, 30, 30);
-    gui->addLabel("CurrentLevel", "CurrentLevel : 0");
+    //gui->addButton("Reset", isReset, 30, 30);
+    gui->addLabel("CurrentLevel", "Current Timer : 0");
     ofAddListener(gui->newGUIEvent,this,&testApp::guiEvent);
     
     ofAddListener( timer.TIMER_REACHED, this, &testApp::timerCallback );
@@ -34,20 +36,49 @@ void testApp::setup(){
 //--------------------------------------------------------------
 void testApp::update(){
     
+    for(int i = 0; i < NUM_MSG_STRINGS; i++){
+		if(timers[i] < ofGetElapsedTimef()){
+			msg_strings[i] = "";
+		}
+	}
+    
     while ( reciver.hasWaitingMessages() ) {
+        string msg_string;
         ofxOscMessage m;
         reciver.getNextMessage( &m );
         
-        if( "/recive" == m.getAddress() ) {
+        if( "/up" == m.getAddress() ) {
             if( false == busy ) {
                 int nextLevel = m.getArgAsInt32(0);
                 busy = true;
-                proceedLevel( nextLevel );
+                proceedLevel( 0, nextLevel );
                 if( !run ){
                     cout << "recived OSC message but not running flag.." << endl;
                 }
+                
+                msg_string += "Message Recived : /up :" ;
+                msg_string += ofToString( nextLevel );
+            }
+        } else if( "/down" == m.getAddress() ){
+            if( false == busy ) {
+                int nextLevel = m.getArgAsInt32(0);
+                busy = true;
+                proceedLevel( 1, nextLevel );
+                if( !run ){
+                    cout << "recived OSC message but not running flag.." << endl;
+                }
+                
+                msg_string += "Message Recived : /down :" ;
+                msg_string += ofToString( nextLevel );
             }
         }
+        
+        // add to the list of strings to display
+        msg_strings[current_msg_string] = msg_string;
+        timers[current_msg_string] = ofGetElapsedTimef() + 5.0f;
+        current_msg_string = (current_msg_string + 1) % NUM_MSG_STRINGS;
+        // clear the next line
+        msg_strings[current_msg_string] = "";
         
     }
     
@@ -71,6 +102,17 @@ void testApp::draw(){
         ofRect(5, 150, 230, 30);
         ofPopStyle();
     }
+    
+    
+	// draw mouse state
+    ofPushStyle();
+    ofSetColor(255, 255, 255);
+    
+	for(int i = 0; i < NUM_MSG_STRINGS; i++){
+		ofDrawBitmapString(msg_strings[i], 430, 15 + 15 * i);
+	}
+    
+    ofPopStyle();
 
 }
 
@@ -82,11 +124,11 @@ void testApp::timerCallback( ofEventArgs &e ) {
     pompTakeRest();
     
     cout << "timer recieved _________ " << &e << " ms : " << count << endl;
-    cout << "now currentLevel is _________ " << currentLevel << endl;
+    cout << "Current Timer is _________ " << currentLevel << endl;
     
     ofxUILabel *label = ( ofxUILabel *)( gui->getWidget("CurrentLevel") );
     char result[100];
-    sprintf( result, "CurrentLevel : %d", currentLevel );
+    sprintf( result, "Current Timer : %d", currentLevel );
     label -> setLabel( result );
 }
 
@@ -111,29 +153,29 @@ void testApp::guiEvent( ofxUIEventArgs &e ){
 }
 
 //--------------------------------------------------------------
-void testApp::proceedLevel( int _nextLevel ) {
+void testApp::proceedLevel( int upDown , int _nextLevel ) {
     if( run ){
         int next = _nextLevel;
         if( 9999 != next  && -1 < next ){ //in case error 9999
             
             
-            float timeDIff = timeDiffToNextLevel( currentLevel, next );
-            timer.reset();
-            timer.loop(false);
+//            float timeDIff = timeDiffToNextLevel( currentLevel, next );
+//            timer.reset();
+//            timer.loop(false);
             
-            if( timeDIff >= 1 ) {
+            if( next >= 0 ) {
                 
-                if( currentLevel > next ){
-                    unsigned char buf[3] = "XB";
+                if( 0 == upDown ){
+                    unsigned char buf[3] = "XF";
                     serial.writeBytes( buf , sizeof(buf) / sizeof(buf[0]) );
                     
-                } else {
-                    unsigned char buf[3] = "XF";
+                } else if ( 1 == upDown ) {
+                    unsigned char buf[3] = "XB";
                     serial.writeBytes( buf , sizeof(buf) / sizeof(buf[0]) );
 
                 }
             
-                timer.setTimer( timeDIff );
+                timer.setTimer( next );
                 timer.startTimer();
             } else {
                 busy = false;
