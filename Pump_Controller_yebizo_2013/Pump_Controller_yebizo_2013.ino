@@ -1,6 +1,6 @@
 /*
 2013 yebizo exihibition
-the ponp controler
+the pump controler
 written by Koichiro Mori
  */
  
