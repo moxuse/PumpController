@@ -97,7 +97,7 @@ void blinkLED() {
   }
 
   counter++;
-  if( counter > 300 ){
+  if( counter > 600 ){
     counter = 0;
     digitalWrite(led_1, LOW);
     digitalWrite(led_2, LOW);
